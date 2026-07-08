@@ -528,14 +528,18 @@ function renderTable() {
     const tl = termLabel(r.Termin);
     const [bCls,bTxt] = statusInfo(r);
     const exp  = S.expanded.has(r.id);
-    const mode = S.expandMode.get(r.id)||null;
+const mode = S.expandMode.get(r.id)||null;
 
-   acts.push(`
-  <button class="btn btn-ghost btn-xs"
-    onclick="event.stopPropagation();editRow(${r.id})">
-    Edytuj
-  </button>
-`);
+const acts = [];
+
+if (canEdit) {
+  acts.push(`
+    <button class="btn btn-ghost btn-xs"
+      onclick="event.stopPropagation();editRow(${r.id})">
+      Edytuj
+    </button>
+  `);
+}
     if (canDyr && r.Dyr_Akceptacja!==true && r.Dyr_Akceptacja!==false)
       acts.push(`<button class="btn btn-success btn-xs" onclick="event.stopPropagation();expandRow(${r.id},'dyr')">Akc. Dyrektora</button>`);
     if (canPrez && r.Dyr_Akceptacja===true && r.Prezes_Akceptacja!==true && r.Prezes_Akceptacja!==false)
