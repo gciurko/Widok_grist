@@ -828,7 +828,9 @@ async function loadAll() {
     const chip=document.getElementById('hdrRole');
     const role=S.isPrez?'Prezes':S.isDyr?'Dyrektor':S.isKier?'Kierownik':'';
     if(role){chip.textContent=role;chip.classList.remove('hidden');}
-    document.getElementById('btnNew').disabled=!S.panel.EdycjaKiero;
+    document.getElementById('btnNew').disabled =
+      !(S.panel.EdycjaKiero && S.isKier) &&
+      !(S.panel.EdycjaDyr && S.isDyr);
     document.getElementById('btnNew').title=S.panel.EdycjaKiero?'':'Edycja kierowników jest wyłączona';
     document.getElementById('stateLoading').classList.add('hidden');
     document.getElementById('appRoot').classList.remove('hidden');
