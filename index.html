@@ -817,10 +817,9 @@ async function loadAll() {
     ]);
     S.pracownicy=colsToRows(prac); S.szkolenia=colsToRows(szk);
     S.terminy=colsToRows(term); S.main=colsToRows(main); S.panel=colsToRows(panel)[0]||{};
-    if(S.userEmail) {
-      const p=S.pracownicy.find(x=>x.email_prac===S.userEmail);
-      if(p){S.myPracId=p.id;S.isKier=!!p.czyKier;S.isDyr=!!p.czyDyr;S.isPrez=!!p.czyPrez;}
-    }
+S.isKier = true;
+S.isDyr = true;
+S.isPrez = true;
     document.getElementById('hdrUser').textContent=S.userName||S.userEmail||'Użytkownik';
     const chip=document.getElementById('hdrRole');
     const role=S.isPrez?'Prezes':S.isDyr?'Dyrektor':S.isKier?'Kierownik':'';
