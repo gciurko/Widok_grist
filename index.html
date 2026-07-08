@@ -835,9 +835,10 @@ async function loadAll() {
     document.getElementById('btnNew').title=S.panel.EdycjaKiero?'':'Edycja kierowników jest wyłączona';
     document.getElementById('stateLoading').classList.add('hidden');
     document.getElementById('appRoot').classList.remove('hidden');
-console.log("MAIN", S.main);
-console.log("PANEL", S.panel);
-console.log("PRAC", S.pracownicy.length);
+    document.getElementById('btnNew').disabled=!S.panel.EdycjaKiero;
+    document.getElementById('btnNew').title=S.panel.EdycjaKiero?'':'Edycja kierowników jest wyłączona';
+    document.getElementById('stateLoading').classList.add('hidden');
+    document.getElementById('appRoot').classList.remove('hidden');
     renderTable();
   } catch(e) { document.getElementById('stateLoading').textContent='⚠ Błąd: '+e.message; }
 }
