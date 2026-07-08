@@ -506,7 +506,8 @@ function renderTable() {
   renderCounts();
   const tbody = document.getElementById('tblBody');
   const rows  = applySort(applyFilter(S.main));
-
+  console.log("ROWS", rows.length);
+  
   if (!rows.length) {
     tbody.innerHTML = `<tr><td colspan="7" class="st-empty">Brak wniosków spełniających kryteria.</td></tr>`;
     return;
