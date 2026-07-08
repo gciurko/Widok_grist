@@ -503,6 +503,7 @@ function renderCounts() {
 }
 
 function renderTable() {
+  console.log('RENDER TABLE START');
   renderCounts();
   const tbody = document.getElementById('tblBody');
   const rows  = applySort(applyFilter(S.main));
