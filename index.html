@@ -519,6 +519,16 @@ function renderTable() {
     (S.panel.EdycjaDyr && S.isDyr) ||
     (S.panel.EdycjaPrezes2 && S.isPrez);
 
+  console.log({
+  EdycjaKiero: S.panel.EdycjaKiero,
+  EdycjaDyr: S.panel.EdycjaDyr,
+  EdycjaPrezes2: S.panel.EdycjaPrezes2,
+  isKier: S.isKier,
+  isDyr: S.isDyr,
+  isPrez: S.isPrez,
+  canEdit
+});
+  
   const canDyr  = !!S.panel.AkceptacjaDyr && S.isDyr;
   const canPrez = !!S.panel.AkceptacjaPrezes && S.isPrez;
 
