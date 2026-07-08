@@ -482,7 +482,7 @@ function sortKey(r) {
     case 'prac':   return (getPrac(r.Pracownik)?.nazwisko||'').toLowerCase();
     case 'szk':    return szkLabel(r.Szkolenie).toLowerCase();
     case 'term':   return getTerm(r.Termin)?.termin_od||0;
-    case 'prior': { const o={'⭐':0,'⭐⭐':1,'⭐⭐⭐':2,'':3}; return o[r.Priorytet||'']??4; }
+    case 'prior': { const o={'⭐⭐⭐':0,'⭐⭐':1,'⭐':2,'':3}; return o[r.Priorytet||'']??4; }
     case 'status': return statusInfo(r)[1];
     default: return r.id;
   }
