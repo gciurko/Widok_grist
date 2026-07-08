@@ -809,58 +809,46 @@ await refresh();
 // Data
 grist.ready({requiredAccess:'full'});
 
-async function loadAll() {
-  try {
-    try { const u=await grist.getUserInfo(); S.userEmail=u?.email||null; S.userName=u?.name||u?.email||null; } catch(_){}
-    const [prac,szk,term,main,panel]=await Promise.all([
-      grist.docApi.fetchTable('Pracownicy'),
-      grist.docApi.fetchTable('Baza_UnikatoweReczne'),
-      grist.docApi.fetchTable('BazaTerminow'),
-      grist.docApi.fetchTable('Main'),
-      grist.docApi.fetchTable('PanelSterowania'),
-    ]);
-    S.pracownicy=colsToRows(prac); S.szkolenia=colsToRows(szk);
-    S.terminy=colsToRows(term); S.main=colsToRows(main); S.panel=colsToRows(panel)[0]||{};
- if(S.userEmail) {
-      const p=S.pracownicy.find(x=>x.email_prac===S.userEmail);
-      if(p){S.myPracId=p.id;S.isKier=!!p.czyKier;S.isDyr=!!p.czyDyr;S.isPrez=!!p.czyPrez;}
-    }
-    document.getElementById('hdrUser').textContent=S.userName||S.userEmail||'Użytkownik';
-    const chip=document.getElementById('hdrRole');
-    const role=S.isPrez?'Prezes':S.isDyr?'Dyrektor':S.isKier?'Kierownik':'';
-    if(role){chip.textContent=role;chip.classList.remove('hidden');}
-    document.getElementById('btnNew').disabled =
-    !(S.panel.EdycjaKiero || S.panel.EdycjaDyr);
-    document.getElementById('btnNew').disabled = !canNew;
-    document.getElementById('btnNew').title=S.panel.EdycjaKiero?'':'Edycja kierowników jest wyłączona';
-    document.getElementById('stateLoading').classList.add('hidden');
-    document.getElementById('appRoot').classList.remove('hidden');
-    renderTable();
-  } catch(e) { document.getElementById('stateLoading').textContent='⚠ Błąd: '+e.message; }
+document.getElementById('hdrUser').textContent =
+  S.userName || S.userEmail || 'Użytkownik';
+
+const chip = document.getElementById('hdrRole');
+const role = S.isPrez ? 'Prezes' :
+             S.isDyr ? 'Dyrektor' :
+             S.isKier ? 'Kierownik' : '';
+
+if (role) {
+  chip.textContent = role;
+  chip.classList.remove('hidden');
 }
 
-async function refresh() {
-  const [main,panel]=await Promise.all([
-    grist.docApi.fetchTable('Main'),
-    grist.docApi.fetchTable('PanelSterowania'),
-  ]);
-  S.main=colsToRows(main); S.panel=colsToRows(panel)[0]||{};
- if(S.userEmail) {
-  const p = S.pracownicy.find(x => x.email_prac === S.userEmail);
-
-  if (p) {
-    S.myPracId = p.id;
-    S.isKier = !!p.czyKier;
-    S.isDyr = !!p.czyDyr;
-    S.isPrez = !!p.czyPrez;
-  }
-}
 document.getElementById('btnNew').disabled =
   !(S.panel.EdycjaKiero || S.panel.EdycjaDyr);
 
+document.getElementById('btnNew').title =
+  S.panel.EdycjaKiero || S.panel.EdycjaDyr
+    ? ''
+    : 'Edycja jest wyłączona';
+
+document.getElementById('stateLoading').classList.add('hidden');
+document.getElementById('appRoot').classList.remove('hidden');
+
+renderTable();
+
+async function refresh() {
+  const [main,panel] = await Promise.all([
+    grist.docApi.fetchTable('Main'),
+    grist.docApi.fetchTable('PanelSterowania'),
+  ]);
+
+  S.main = colsToRows(main);
+  S.panel = colsToRows(panel)[0] || {};
+
+  document.getElementById('btnNew').disabled =
+    !(S.panel.EdycjaKiero || S.panel.EdycjaDyr);
+
   renderTable();
 }
-
 loadAll();
 </script>
 </body>
