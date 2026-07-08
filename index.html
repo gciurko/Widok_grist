@@ -832,10 +832,8 @@ async function loadAll() {
     document.getElementById('btnNew').disabled =
       !(S.panel.EdycjaKiero && S.isKier) &&
       !(S.panel.EdycjaDyr && S.isDyr);
-    document.getElementById('btnNew').title=S.panel.EdycjaKiero?'':'Edycja kierowników jest wyłączona';
     document.getElementById('stateLoading').classList.add('hidden');
     document.getElementById('appRoot').classList.remove('hidden');
-    document.getElementById('btnNew').disabled=!S.panel.EdycjaKiero;
     document.getElementById('btnNew').title=S.panel.EdycjaKiero?'':'Edycja kierowników jest wyłączona';
     document.getElementById('stateLoading').classList.add('hidden');
     document.getElementById('appRoot').classList.remove('hidden');
