@@ -846,7 +846,16 @@ async function refresh() {
     grist.docApi.fetchTable('PanelSterowania'),
   ]);
   S.main=colsToRows(main); S.panel=colsToRows(panel)[0]||{};
- 
+ if(S.userEmail) {
+  const p = S.pracownicy.find(x => x.email_prac === S.userEmail);
+
+  if (p) {
+    S.myPracId = p.id;
+    S.isKier = !!p.czyKier;
+    S.isDyr = !!p.czyDyr;
+    S.isPrez = !!p.czyPrez;
+  }
+}
 const canNew =
   (S.panel.EdycjaKiero && S.isKier) ||
   (S.panel.EdycjaDyr && S.isDyr);
