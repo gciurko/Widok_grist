@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LEX-IANS — Wnioski szkoleniowe</title>
+  <!--
+    GRIST CUSTOM WIDGET — LEX-IANS
+    Tabele: Main, BazaTerminow, Baza_UnikatoweReczne, Pracownicy, PanelSterowania
+    Access: Full document access
+  -->
+  <script src="https://docs.getgrist.com/grist-plugin-api.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:    #1a237e;
+      --blue:    #3949ab;
+      --blue-lt: #e8eaf6;
+      --green:   #2e7d32;
+      --green-lt:#e8f5e9;
+      --amber:   #b45309;
+      --amber-lt:#fef3c7;
+      --red:     #b91c1c;
+      --red-lt:  #fee2e2;
+      --gray:    #6b7280;
+      --border:  #e5e7eb;
+      --bg:      #f9fafb;
+      --white:   #ffffff;
+      --text:    #111827;
+      --text-sm: #374151;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    /* Header */
+    .hdr {
+      background: var(--navy);
+      color: #fff;
+      padding: 0 24px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: 0 1px 6px rgba(0,0,0,.35);
+    }
+    .hdr-title { font-size: 14px; font-weight: 700; letter-spacing: .1px; }
+    .hdr-sep   { width: 1px; height: 20px; background: rgba(255,255,255,.2); }
+    .hdr-sub   { font-size: 12px; opacity: .65; }
+    .hdr-user  {
+      margin-left: auto;
+      display: flex; align-items: center; gap: 8px;
+      font-size: 12px; opacity: .8;
+    }
+    .hdr-role {
+      background: rgba(255,255,255,.15);
+      border-radius: 99px;
+      padding: 2px 10px;
+      font-size: 11px; font-weight: 600;
+    }
+
+    /* Toolbar */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 24px 10px;
+      flex-wrap: wrap;
+    }
+    .search-wrap { position: relative; flex: 1; min-width: 180px; max-width: 300px; }
+    .search-wrap svg {
+      position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+      color: var(--gray); pointer-events: none;
+    }
+    .search-input {
+      width: 100%; padding: 7px 10px 7px 34px;
+      border: 1px solid var(--border); border-radius: 7px;
+      font-size: 13px; background: var(--white);
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .search-input:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(57,73,171,.1); }
+
+    .filter-tabs { display: flex; gap: 4px; }
+    .ft {
+      padding: 6px 13px; border-radius: 6px;
+      font-size: 12px; font-weight: 600;
+      border: 1.5px solid var(--border);
+      background: var(--white); color: var(--gray);
+      cursor: pointer; transition: all .12s;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .ft:hover { border-color: var(--blue); color: var(--blue); }
+    .ft.on { background: var(--blue); border-color: var(--blue); color: #fff; }
+    .ft .cnt {
+      background: rgba(255,255,255,.25);
+      border-radius: 99px; padding: 0 6px;
+      font-size: 10px; font-weight: 700; min-width: 18px; text-align: center;
+    }
+    .ft:not(.on) .cnt { background: #e5e7eb; color: var(--gray); }
+    .ml-auto { margin-left: auto; }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 7px 14px; border-radius: 7px;
+      font-size: 13px; font-weight: 600; border: none;
+      cursor: pointer; transition: background .13s, opacity .13s; white-space: nowrap;
+    }
+    .btn:disabled { opacity: .4; cursor: not-allowed; }
+    .btn-primary { background: var(--blue); color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: var(--navy); }
+    .btn-ghost   { background: var(--white); color: var(--text-sm); border: 1.5px solid var(--border); }
+    .btn-ghost:hover:not(:disabled) { background: var(--bg); }
+    .btn-success { background: var(--green); color: #fff; }
+    .btn-success:hover:not(:disabled) { background: #1b5e20; }
+    .btn-danger  { background: var(--red); color: #fff; }
+    .btn-danger:hover:not(:disabled)  { background: #991b1b; }
+    .btn-xs { padding: 3px 9px; font-size: 11px; border-radius: 5px; }
+
+    /* Table */
+    .tbl-wrap {
+      margin: 0 24px 32px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    }
+    .tbl-wrap table {
+      width: 100%; border-collapse: collapse; table-layout: fixed;
+    }
+    col.c-prac  { width: 165px; }
+    col.c-szk   { width: auto; }
+    col.c-term  { width: 190px; }
+    col.c-prior { width: 90px; }
+    col.c-status{ width: 130px; }
+    col.c-uzas  { width: 175px; }
+    col.c-akc   { width: 175px; }
+
+    thead th {
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .6px;
+      color: var(--gray);
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+      cursor: pointer; user-select: none;
+    }
+    thead th:hover { color: var(--blue); }
+    thead th .si { opacity: .3; margin-left: 3px; font-style: normal; }
+    thead th.sorted .si { opacity: 1; color: var(--blue); }
+
+    tbody tr {
+      border-bottom: 1px solid #f3f4f6;
+      transition: background .1s;
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr.data-row:hover { background: #f0f4ff; }
+    tbody tr.data-row { cursor: pointer; }
+    tbody tr.data-row.expanded-row { background: #f5f7ff; }
+
+    td {
+      padding: 10px 14px;
+      vertical-align: middle;
+      font-size: 13px;
+    }
+    .cell-main { font-weight: 600; color: var(--text); }
+    .cell-sub  { font-size: 11px; color: var(--gray); margin-top: 2px; }
+    .cell-trunc { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 0; }
+
+    /* Badges */
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 8px; border-radius: 99px;
+      font-size: 11px; font-weight: 600; white-space: nowrap;
+    }
+    .badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .b-gray  { background: #f3f4f6; color: #4b5563; }
+    .b-gray::before  { background: #9ca3af; }
+    .b-blue  { background: var(--blue-lt); color: var(--blue); }
+    .b-blue::before  { background: var(--blue); }
+    .b-green { background: var(--green-lt); color: var(--green); }
+    .b-green::before { background: var(--green); }
+    .b-red   { background: var(--red-lt); color: var(--red); }
+    .b-red::before   { background: var(--red); }
+    .b-amber { background: var(--amber-lt); color: var(--amber); }
+    .b-amber::before { background: var(--amber); }
+
+    /* Expand row */
+    .exp-td { padding: 0 !important; background: #f5f7ff; }
+    .exp-inner {
+      padding: 14px 18px 16px 38px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px 24px;
+      border-top: 1px solid #dde3f7;
+    }
+    .exp-sec h4 {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .5px; color: var(--gray); margin-bottom: 5px;
+    }
+    .exp-text {
+      font-size: 13px; color: var(--text-sm); white-space: pre-wrap; word-break: break-word;
+    }
+    .exp-full { grid-column: 1 / -1; }
+    .appr-form { display: flex; flex-direction: column; gap: 7px; }
+    .appr-form textarea {
+      width: 100%; padding: 7px 10px;
+      border: 1px solid var(--border); border-radius: 6px;
+      font-size: 12px; font-family: inherit;
+      resize: vertical; min-height: 52px;
+    }
+    .appr-form textarea:focus { outline: none; border-color: var(--blue); }
+    .appr-btns { display: flex; gap: 7px; }
+
+    /* Empty / loading */
+    .st-empty   { text-align: center; padding: 56px 20px; color: #9ca3af; font-size: 13px; font-style: italic; }
+    .st-loading { text-align: center; padding: 48px 20px; color: #9ca3af; }
+
+    /* Modal */
+    .overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(15,23,42,.5);
+      z-index: 80; align-items: center; justify-content: center;
+    }
+    .overlay.open { display: flex; }
+    .modal {
+      background: var(--white); border-radius: 12px;
+      width: 100%; max-width: 490px;
+      box-shadow: 0 24px 64px rgba(0,0,0,.2);
+      max-height: 90vh; overflow-y: auto;
+    }
+    .modal-hdr {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 22px 14px;
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; background: var(--white); z-index: 1;
+    }
+    .modal-hdr h2 { font-size: 15px; font-weight: 700; color: var(--navy); }
+    .modal-x {
+      background: none; border: none; cursor: pointer;
+      color: var(--gray); font-size: 18px; line-height: 1;
+      padding: 3px 7px; border-radius: 5px;
+    }
+    .modal-x:hover { background: var(--bg); }
+    .modal-body { padding: 18px 22px; }
+    .modal-ftr {
+      display: flex; gap: 9px; justify-content: flex-end;
+      padding: 14px 22px; border-top: 1px solid var(--border);
+      background: var(--white); position: sticky; bottom: 0;
+    }
+    .field { margin-bottom: 14px; }
+    .field:last-child { margin-bottom: 0; }
+    .field label { display: block; font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 5px; }
+    .field .req  { color: var(--red); }
+    .field select, .field textarea {
+      width: 100%; padding: 8px 11px;
+      border: 1px solid var(--border); border-radius: 7px;
+      font-size: 13px; font-family: inherit; background: var(--white);
+      transition: border-color .13s, box-shadow .13s;
+    }
+    .field select:focus, .field textarea:focus {
+      outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(57,73,171,.1);
+    }
+    .field textarea { resize: vertical; min-height: 68px; }
+    .field-hint { font-size: 11px; color: var(--gray); margin-top: 3px; }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 20px; right: 20px;
+      padding: 10px 16px; border-radius: 8px;
+      font-size: 13px; color: #fff;
+      opacity: 0; pointer-events: none;
+      transition: opacity .22s, transform .22s;
+      transform: translateY(6px); z-index: 999;
+      box-shadow: 0 4px 12px rgba(0,0,0,.2);
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.ok  { background: var(--green); }
+    .toast.err { background: var(--red); }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+<header class="hdr">
+  <span class="hdr-title">LEX-IANS</span>
+  <div class="hdr-sep"></div>
+  <span class="hdr-sub">Wnioski szkoleniowe</span>
+  <div class="hdr-user">
+    <span id="hdrUser">…</span>
+    <span class="hdr-role hidden" id="hdrRole"></span>
+  </div>
+</header>
+
+<div id="stateLoading" class="st-loading">Ładowanie danych…</div>
+
+<div id="appRoot" class="hidden">
+  <div class="toolbar">
+    <div class="search-wrap">
+      <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="9" cy="9" r="6"/><path d="M15 15l-3.5-3.5"/>
+      </svg>
+      <input id="searchInput" class="search-input" type="text" placeholder="Szukaj…" autocomplete="off">
+    </div>
+
+    <div class="filter-tabs">
+      <button class="ft on" data-f="all">Wszystkie <span class="cnt" id="cntAll">0</span></button>
+      <button class="ft" data-f="pending">Akceptacja Dyrektor<span class="cnt" id="cntPending">0</span></button>
+      <button class="ft" data-f="dyr">Akceptacja Prezes<span class="cnt" id="cntDyr">0</span></button>
+      <button class="ft" data-f="done">Zatwierdzone<span class="cnt" id="cntDone">0</span></button>
+    </div>
+
+    <div class="ml-auto" style="display:flex;gap:8px;align-items:center;">
+      <button class="btn btn-ghost" id="btnRefresh">↻ Odśwież</button>
+      <button class="btn btn-primary" id="btnNew">+ Nowy wniosek</button>
+    </div>
+  </div>
+
+  <div class="tbl-wrap">
+    <table id="mainTable">
+      <colgroup>
+        <col class="c-prac"><col class="c-szk"><col class="c-term">
+        <col class="c-prior"><col class="c-status"><col class="c-uzas"><col class="c-akc">
+      </colgroup>
+      <thead>
+        <tr>
+          <th data-sort="prac">Pracownik <i class="si">↕</i></th>
+          <th data-sort="szk">Szkolenie <i class="si">↕</i></th>
+          <th data-sort="term">Termin <i class="si">↕</i></th>
+          <th data-sort="prior">Priorytet <i class="si">↕</i></th>
+          <th data-sort="status">Status <i class="si">↕</i></th>
+          <th>Uzasadnienie</th>
+          <th>Akcje</th>
+        </tr>
+      </thead>
+      <tbody id="tblBody">
+        <tr><td colspan="7" class="st-empty">Brak danych.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="overlay" id="modal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h2>Nowy wniosek szkoleniowy</h2>
+      <button class="modal-x" id="modalClose">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Pracownik <span class="req">*</span></label>
+        <select id="mPrac"><option value="">— wybierz pracownika —</option></select>
+      </div>
+      <div class="field">
+        <label>Szkolenie <span class="req">*</span></label>
+        <select id="mSzk"><option value="">— wybierz szkolenie —</option></select>
+      </div>
+      <div class="field">
+        <label>Termin <span class="req">*</span></label>
+        <select id="mTerm"><option value="">— najpierw wybierz szkolenie —</option></select>
+        <div class="field-hint" id="mTermHint"></div>
+      </div>
+      <div class="field">
+        <label>Priorytet</label>
+        <select id="mPrior">
+          <option value="">— brak —</option>
+          <option>⭐</option>
+          <option>⭐⭐</option>
+          <option>⭐⭐⭐</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Uzasadnienie</label>
+        <textarea id="mUzas" placeholder="Opisz potrzebę szkolenia…"></textarea>
+      </div>
+    </div>
+    <div class="modal-ftr">
+      <button class="btn btn-ghost" id="modalCancel">Anuluj</button>
+      <button class="btn btn-primary" id="modalSave">Zapisz wniosek</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+function esc(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function fmtDate(ts) {
+  if (!ts) return null;
+  return new Date(ts * 1000).toLocaleDateString('pl-PL', {day:'2-digit',month:'2-digit',year:'numeric'});
+}
+
+const S = {
+  userEmail:null, userName:null,
+  pracownicy:[], szkolenia:[], terminy:[], main:[], panel:{},
+  myPracId:null, isKier:false, isDyr:false, isPrez:false,
+  filter:'all', search:'',
+  sortCol:null, sortDir:1,
+  expanded: new Set(),
+  expandMode: new Map(),
+  editingId: null,
+};
+
+function colsToRows(data) {
+  return (data.id||[]).map((id,i) => {
+    const row = {id};
+    for (const [k,v] of Object.entries(data)) row[k] = v[i];
+    return row;
+  });
+}
+
+function getPrac(id) { return S.pracownicy.find(x=>x.id===id)||null; }
+function getSzk(id)  { return S.szkolenia.find(x=>x.id===id)||null; }
+function getTerm(id) { return S.terminy.find(x=>x.id===id)||null; }
+
+function pracLabel(id) {
+  const p = getPrac(id); if (!p) return {name:id?`#${id}`:'—',sub:''};
+  const kom = (p.Komorka||(p.kom_org_||'').split('-').pop()||'').trim();
+  return {name:`${p.nazwisko} ${p.imie}`, sub:kom};
+}
+function szkLabel(id) { return getSzk(id)?.title_full||(id?`#${id}`:'—'); }
+function termLabel(id) {
+  const t = getTerm(id); if (!t) return {main:id?`#${id}`:'—', sub:'', ts:0};
+  let main = '';
+  if (t.Termin_Detail) { main = t.Termin_Detail; }
+  else {
+    const od=fmtDate(t.termin_od), do_=fmtDate(t.termin_do);
+    main = od&&do_ ? `${od} – ${do_}` : (t.termin||`#${id}`);
+  }
+  const sub = [t.lokalizacja, t.dni_robocze?`${t.dni_robocze} dni`:null, t.koszt].filter(Boolean).join(' · ');
+  return {main, sub, ts:t.termin_od||0};
+}
+
+function statusInfo(r) {
+  if (r.Prezes_Akceptacja===true)  return ['b-green','Zatwierdzone'];
+  if (r.Prezes_Akceptacja===false) return ['b-red','Odrz. Prezes'];
+  if (r.Dyr_Akceptacja===true)     return ['b-blue','Akc. Dyr.'];
+  if (r.Dyr_Akceptacja===false)    return ['b-red','Odrz. Dyr.'];
+  return ['b-gray','Oczekuje'];
+}
+function priorityBadge(p) {
+  if (!p) return '';
+  const cls = p==='⭐⭐⭐'?'b-red':p==='⭐⭐'?'b-amber':'b-gray';
+  return `<span class="badge ${cls}">${esc(p)}</span>`;
+}
+
+function applyFilter(rows) {
+  let r = rows;
+  if (S.filter==='pending') r=r.filter(x=>x.Dyr_Akceptacja!==true&&x.Dyr_Akceptacja!==false);
+  if (S.filter==='dyr')     r=r.filter(x=>x.Dyr_Akceptacja===true&&x.Prezes_Akceptacja!==true&&x.Prezes_Akceptacja!==false);
+  if (S.filter==='done')    r=r.filter(x=>x.Prezes_Akceptacja===true);
+  if (S.search) {
+    const q=S.search.toLowerCase();
+    r=r.filter(x=>{
+      const pl=pracLabel(x.Pracownik), sl=szkLabel(x.Szkolenie), tl=termLabel(x.Termin);
+      return pl.name.toLowerCase().includes(q)||sl.toLowerCase().includes(q)
+            ||tl.main.toLowerCase().includes(q)||(x.Priorytet||'').toLowerCase().includes(q)
+            ||(x.Uzasadnienie_Kierownika||'').toLowerCase().includes(q);
+    });
+  }
+  return r;
+}
+
+function sortKey(r) {
+  switch(S.sortCol) {
+    case 'prac':   return (getPrac(r.Pracownik)?.nazwisko||'').toLowerCase();
+    case 'szk':    return szkLabel(r.Szkolenie).toLowerCase();
+    case 'term':   return getTerm(r.Termin)?.termin_od||0;
+    case 'prior': { const o={'Pilny':0,'Wysoki':1,'Normalny':2,'':3}; return o[r.Priorytet||'']??4; }
+    case 'status': return statusInfo(r)[1];
+    default: return r.id;
+  }
+}
+function applySort(rows) {
+  if (!S.sortCol) return rows;
+  return [...rows].sort((a,b)=>{
+    const ka=sortKey(a),kb=sortKey(b);
+    if(ka<kb) return -S.sortDir; if(ka>kb) return S.sortDir; return 0;
+  });
+}
+
+function renderCounts() {
+  document.getElementById('cntAll').textContent     = S.main.length;
+  document.getElementById('cntPending').textContent = S.main.filter(x=>x.Dyr_Akceptacja!==true&&x.Dyr_Akceptacja!==false).length;
+  document.getElementById('cntDyr').textContent     = S.main.filter(x=>x.Dyr_Akceptacja===true&&x.Prezes_Akceptacja!==true&&x.Prezes_Akceptacja!==false).length;
+  document.getElementById('cntDone').textContent    = S.main.filter(x=>x.Prezes_Akceptacja===true).length;
+}
+
+function renderTable() {
+  renderCounts();
+  const tbody = document.getElementById('tblBody');
+  const rows  = applySort(applyFilter(S.main));
+
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="7" class="st-empty">Brak wniosków spełniających kryteria.</td></tr>`;
+    return;
+  }
+
+  const canAdd  = !!S.panel.EdycjaKiero;
+
+  const canEdit =
+    (S.panel.EdycjaKiero && S.isKier) ||
+    (S.panel.EdycjaDyr && S.isDyr) ||
+    (S.panel.EdycjaPrezes2 && S.isPrez);
+
+  const canDyr  = !!S.panel.AkceptacjaDyr && S.isDyr;
+  const canPrez = !!S.panel.AkceptacjaPrezes && S.isPrez;
+  ``
+
+  tbody.innerHTML = rows.map(r => {
+    const pl = pracLabel(r.Pracownik);
+    const sl = szkLabel(r.Szkolenie);
+    const tl = termLabel(r.Termin);
+    const [bCls,bTxt] = statusInfo(r);
+    const exp  = S.expanded.has(r.id);
+    const mode = S.expandMode.get(r.id)||null;
+
+    const acts = []; 
+    if (canEdit){
+      acts.push('
+        <button class="btn btn-ghost btn-xs"
+         onclick="event.stopPropagation();editRow(${r.id})">
+         Edytuj
+        </button>
+      ');
+    }
+    if (canDyr && r.Dyr_Akceptacja!==true && r.Dyr_Akceptacja!==false)
+      acts.push(`<button class="btn btn-success btn-xs" onclick="event.stopPropagation();expandRow(${r.id},'dyr')">Akc. Dyrektora</button>`);
+    if (canPrez && r.Dyr_Akceptacja===true && r.Prezes_Akceptacja!==true && r.Prezes_Akceptacja!==false)
+      acts.push(`<button class="btn btn-success btn-xs" onclick="event.stopPropagation();expandRow(${r.id},'prez')">Akc. Prezesa</button>`);
+    if (canEdit && !r.Dyr_Akceptacja)
+      acts.push(`<button class="btn btn-ghost btn-xs" onclick="event.stopPropagation();delRow(${r.id})">Usuń</button>`);
+
+    const mainRow = `
+      <tr class="data-row${exp?' expanded-row':''}" onclick="toggleRow(${r.id})">
+        <td>
+          <div class="cell-main">${esc(pl.name)}</div>
+          ${pl.sub?`<div class="cell-sub">${esc(pl.sub)}</div>`:''}
+        </td>
+        <td class="cell-trunc" title="${esc(sl)}">${esc(sl)}</td>
+        <td>
+          <div>${esc(tl.main)}</div>
+          ${tl.sub?`<div class="cell-sub">${esc(tl.sub)}</div>`:''}
+        </td>
+        <td>${priorityBadge(r.Priorytet)}</td>
+        <td><span class="badge ${bCls}">${esc(bTxt)}</span></td>
+        <td class="cell-trunc" title="${esc(r.Uzasadnienie_Kierownika||'')}">${esc(r.Uzasadnienie_Kierownika||'—')}</td>
+        <td onclick="event.stopPropagation()" style="white-space:nowrap">
+          ${acts.join(' ')||'<span style="color:#d1d5db;font-size:11px">—</span>'}
+        </td>
+      </tr>`;
+
+    let expRow = '';
+    if (exp) {
+      const hasDetails = r.Uzasadnienie_Kierownika||r.Dyr_Komentarz||r.Prezes_Komentarz;
+      expRow = `
+        <tr>
+          <td colspan="7" class="exp-td">
+            <div class="exp-inner">
+              ${r.Uzasadnienie_Kierownika?`<div class="exp-sec exp-full"><h4>Uzasadnienie kierownika</h4><div class="exp-text">${esc(r.Uzasadnienie_Kierownika)}</div></div>`:''}
+              ${r.Dyr_Komentarz?`<div class="exp-sec"><h4>Komentarz Dyrektora</h4><div class="exp-text">${esc(r.Dyr_Komentarz)}</div></div>`:''}
+              ${r.Prezes_Komentarz?`<div class="exp-sec"><h4>Komentarz Prezesa</h4><div class="exp-text">${esc(r.Prezes_Komentarz)}</div></div>`:''}
+              ${mode==='dyr'&&canDyr?`
+                <div class="exp-sec exp-full">
+                  <h4>Akceptacja Dyrektora</h4>
+                  <div class="appr-form">
+                    <textarea id="kd${r.id}" placeholder="Komentarz (opcjonalnie)…">${esc(r.Dyr_Komentarz||'')}</textarea>
+                    <div class="appr-btns">
+                      <button class="btn btn-success btn-xs" onclick="akDyr(${r.id},true)">✓ Akceptuj</button>
+                      <button class="btn btn-danger btn-xs"  onclick="akDyr(${r.id},false)">✗ Odrzuć</button>
+                    </div>
+                  </div>
+                </div>`:''}
+              ${mode==='prez'&&canPrez?`
+                <div class="exp-sec exp-full">
+                  <h4>Akceptacja Prezesa</h4>
+                  <div class="appr-form">
+                    <textarea id="kp${r.id}" placeholder="Komentarz (opcjonalnie)…">${esc(r.Prezes_Komentarz||'')}</textarea>
+                    <div class="appr-btns">
+                      <button class="btn btn-success btn-xs" onclick="akPrez(${r.id},true)">✓ Zatwierdź</button>
+                      <button class="btn btn-danger btn-xs"  onclick="akPrez(${r.id},false)">✗ Odrzuć</button>
+                    </div>
+                  </div>
+                </div>`:''}
+              ${!hasDetails&&!mode?`<div class="exp-sec exp-full" style="color:#9ca3af;font-style:italic;font-size:12px">Brak dodatkowych informacji.</div>`:''}
+            </div>
+          </td>
+        </tr>`;
+    }
+    return mainRow + expRow;
+  }).join('');
+}
+
+function toggleRow(id) {
+  if (S.expanded.has(id)) { S.expanded.delete(id); S.expandMode.delete(id); }
+  else S.expanded.add(id);
+  renderTable();
+}
+function expandRow(id, mode) {
+  S.expanded.add(id); S.expandMode.set(id, mode);
+  renderTable();
+}
+
+async function delRow(id) {
+  if (!confirm('Usunąć ten wniosek?')) return;
+  try {
+    await grist.docApi.applyUserActions([['RemoveRecord','Main',id]]);
+    S.expanded.delete(id);
+    toast('Wniosek usunięty.');
+    await refresh();
+  } catch(e) { toast('Błąd: '+e.message,'err'); }
+}
+async function akDyr(id, val) {
+  if (!confirm(val?'Zaakceptować?':'Odrzucić?')) return;
+  const kmt=(document.getElementById(`kd${id}`)?.value||'').trim();
+  try {
+    await grist.docApi.applyUserActions([['UpdateRecord','Main',id,{Dyr_Akceptacja:val,Dyr_Komentarz:kmt}]]);
+    S.expanded.delete(id); S.expandMode.delete(id);
+    toast(val?'Zaakceptowano.':'Odrzucono.');
+    await refresh();
+  } catch(e) { toast('Błąd: '+e.message,'err'); }
+}
+async function akPrez(id, val) {
+  if (!confirm(val?'Zatwierdzić?':'Odrzucić?')) return;
+  const kmt=(document.getElementById(`kp${id}`)?.value||'').trim();
+  try {
+    await grist.docApi.applyUserActions([['UpdateRecord','Main',id,{Prezes_Akceptacja:val,Prezes_Komentarz:kmt}]]);
+    S.expanded.delete(id); S.expandMode.delete(id);
+    toast(val?'Zatwierdzono.':'Odrzucono (Prezes).');
+    await refresh();
+  } catch(e) { toast('Błąd: '+e.message,'err'); }
+}
+
+// Sort
+document.querySelectorAll('thead th[data-sort]').forEach(th=>{
+  th.addEventListener('click',()=>{
+    const col=th.dataset.sort;
+    if(S.sortCol===col) S.sortDir*=-1; else {S.sortCol=col;S.sortDir=1;}
+    document.querySelectorAll('thead th').forEach(h=>h.classList.remove('sorted'));
+    th.classList.add('sorted');
+    th.querySelector('.si').textContent=S.sortDir===1?'↑':'↓';
+    renderTable();
+  });
+});
+
+// Filter tabs
+document.querySelectorAll('.ft').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.ft').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on'); S.filter=b.dataset.f; renderTable();
+  });
+});
+
+// Search
+document.getElementById('searchInput').addEventListener('input',e=>{S.search=e.target.value.trim();renderTable();});
+
+// Refresh
+document.getElementById('btnRefresh').addEventListener('click',()=>refresh().catch(e=>toast('Błąd: '+e.message,'err')));
+
+let _tt=null;
+function toast(msg,type='ok') {
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.className=`toast ${type} show`;
+  clearTimeout(_tt); _tt=setTimeout(()=>el.classList.remove('show'),3000);
+}
+
+function editRow(id){
+
+  const r = S.main.find(x => x.id === id);
+  if (!r) return;
+
+  S.editingId = id;
+
+  openModal();
+
+  document.getElementById('mPrac').value = r.Pracownik || '';
+  document.getElementById('mSzk').value = r.Szkolenie || '';
+
+  document.getElementById('mUzas').value =
+      r.Uzasadnienie_Kierownika || '';
+
+  document.getElementById('mPrior').value =
+      r.Priorytet || '';
+
+  document.getElementById('modalSave').textContent =
+      'Zapisz zmiany';
+
+  document.getElementById('mSzk').dispatchEvent(
+      new Event('change')
+  );
+
+  setTimeout(() => {
+      document.getElementById('mTerm').value =
+          r.Termin || '';
+  }, 100);
+}
+
+// Modal
+function openModal() {
+
+  if (!S.editingId) {
+
+    document.getElementById('modalSave').textContent =
+      'Zapisz wniosek';
+
+    document.getElementById('mTerm').innerHTML =
+      '<option value="">— najpierw wybierz szkolenie —</option>';
+
+    document.getElementById('mTermHint').textContent = '';
+    document.getElementById('mPrior').value = '';
+    document.getElementById('mUzas').value = '';
+
+  }
+
+  document.getElementById('mPrac').innerHTML =
+    '<option value="">— wybierz pracownika —</option>' +
+    [...S.pracownicy]
+      .sort((a,b)=>(a.nazwisko||'').localeCompare(b.nazwisko||'','pl'))
+      .map(p=>{
+        const kom=(p.Komorka||(p.kom_org_||'').split('-').pop()||'').trim();
+        const sel=p.id===S.myPracId?' selected':'';
+        return `<option value="${p.id}"${sel}>${esc(p.nazwisko)} ${esc(p.imie)}${kom?' ['+esc(kom)+']':''}</option>`;
+      }).join('');
+
+  document.getElementById('mSzk').innerHTML =
+    '<option value="">— wybierz szkolenie —</option>' +
+    [...S.szkolenia]
+      .sort((a,b)=>(a.title_full||'').localeCompare(b.title_full||'','pl'))
+      .map(s=>`<option value="${s.id}">${esc(s.title_full)}</option>`)
+      .join('');
+
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal() {
+  S.editingId = null;
+  document.getElementById('modalSave').textContent = 'Zapisz wniosek';
+  document.getElementById('modal').classList.remove('open');
+}
+document.getElementById('mSzk').addEventListener('change',()=>{
+  const szkId=parseInt(document.getElementById('mSzk').value);
+  const mTerm=document.getElementById('mTerm'), hint=document.getElementById('mTermHint');
+  if(!szkId){mTerm.innerHTML='<option value="">— najpierw wybierz szkolenie —</option>';hint.textContent='';return;}
+  const title=getSzk(szkId)?.title_full||'';
+  const matching=[...S.terminy].filter(t=>t.title_full===title).sort((a,b)=>(a.termin_od||0)-(b.termin_od||0));
+  if(!matching.length){mTerm.innerHTML='<option value="">— brak terminów —</option>';hint.textContent='';return;}
+  mTerm.innerHTML='<option value="">— wybierz termin —</option>'+
+    matching.map(t=>{const tl=termLabel(t.id);return`<option value="${t.id}">${esc(tl.main)}${tl.sub?' | '+esc(tl.sub):''}</option>`;}).join('');
+  hint.textContent=`${matching.length} termin(ów) dostępnych.`;
+});
+
+document.getElementById('btnNew').addEventListener('click',openModal);
+document.getElementById('modalClose').addEventListener('click',closeModal);
+document.getElementById('modalCancel').addEventListener('click',closeModal);
+document.getElementById('modal').addEventListener('click',e=>{if(e.target===document.getElementById('modal'))closeModal();});
+
+document.getElementById('modalSave').addEventListener('click',async()=>{
+  const pracId=parseInt(document.getElementById('mPrac').value)||0;
+  const szkId =parseInt(document.getElementById('mSzk').value)||0;
+  const termId=parseInt(document.getElementById('mTerm').value)||0;
+  const prior =document.getElementById('mPrior').value;
+  const uzas  =document.getElementById('mUzas').value.trim();
+  if(!pracId||!szkId||!termId){toast('Uzupełnij wymagane pola: Pracownik, Szkolenie, Termin.','err');return;}
+  const btn=document.getElementById('modalSave');
+  btn.disabled=true; btn.textContent='Zapisywanie…';
+  try {
+    const f={Pracownik:pracId,Szkolenie:szkId,Termin:termId};
+    if(prior) f.Priorytet=prior;
+    if(uzas)  f.Uzasadnienie_Kierownika=uzas;
+if (S.editingId) {
+
+  await grist.docApi.applyUserActions([
+    ['UpdateRecord','Main',S.editingId,f]
+  ]);
+
+  toast('Wniosek zaktualizowany.');
+
+} else {
+
+  await grist.docApi.applyUserActions([
+    ['AddRecord','Main',null,f]
+  ]);
+
+  toast('Wniosek zapisany.');
+
+}
+
+closeModal();
+await refresh();
+  } catch(e){toast('Błąd: '+e.message,'err');}
+  finally{btn.disabled=false;btn.textContent='Zapisz wniosek';}
+});
+
+// Data
+grist.ready({requiredAccess:'full'});
+
+async function loadAll() {
+  try {
+    try { const u=await grist.getUserInfo(); S.userEmail=u?.email||null; S.userName=u?.name||u?.email||null; } catch(_){}
+    const [prac,szk,term,main,panel]=await Promise.all([
+      grist.docApi.fetchTable('Pracownicy'),
+      grist.docApi.fetchTable('Baza_UnikatoweReczne'),
+      grist.docApi.fetchTable('BazaTerminow'),
+      grist.docApi.fetchTable('Main'),
+      grist.docApi.fetchTable('PanelSterowania'),
+    ]);
+    S.pracownicy=colsToRows(prac); S.szkolenia=colsToRows(szk);
+    S.terminy=colsToRows(term); S.main=colsToRows(main); S.panel=colsToRows(panel)[0]||{};
+    if(S.userEmail) {
+      const p=S.pracownicy.find(x=>x.email_prac===S.userEmail);
+      if(p){S.myPracId=p.id;S.isKier=!!p.czyKier;S.isDyr=!!p.czyDyr;S.isPrez=!!p.czyPrez;}
+    }
+    document.getElementById('hdrUser').textContent=S.userName||S.userEmail||'Użytkownik';
+    const chip=document.getElementById('hdrRole');
+    const role=S.isPrez?'Prezes':S.isDyr?'Dyrektor':S.isKier?'Kierownik':'';
+    if(role){chip.textContent=role;chip.classList.remove('hidden');}
+    document.getElementById('btnNew').disabled=!S.panel.EdycjaKiero;
+    document.getElementById('btnNew').title=S.panel.EdycjaKiero?'':'Edycja kierowników jest wyłączona';
+    document.getElementById('stateLoading').classList.add('hidden');
+    document.getElementById('appRoot').classList.remove('hidden');
+    renderTable();
+  } catch(e) { document.getElementById('stateLoading').textContent='⚠ Błąd: '+e.message; }
+}
+
+async function refresh() {
+  const [main,panel]=await Promise.all([
+    grist.docApi.fetchTable('Main'),
+    grist.docApi.fetchTable('PanelSterowania'),
+  ]);
+  S.main=colsToRows(main); S.panel=colsToRows(panel)[0]||{};
+  document.getElementById('btnNew').disabled =
+   !(S.panel.EdycjaKiero && S.isKier) &&
+   !(S.panel.EdycjaDyr && S.isDyr);
+
+  renderTable();
+}
+
+loadAll();
+</script>
+</body>
+</html>
