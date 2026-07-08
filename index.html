@@ -532,12 +532,12 @@ function renderTable() {
 
     const acts = []; 
     if (canEdit){
-      acts.push('
+      acts.push(`
         <button class="btn btn-ghost btn-xs"
          onclick="event.stopPropagation();editRow(${r.id})">
          Edytuj
         </button>
-      ');
+      `);
     }
     if (canDyr && r.Dyr_Akceptacja!==true && r.Dyr_Akceptacja!==false)
       acts.push(`<button class="btn btn-success btn-xs" onclick="event.stopPropagation();expandRow(${r.id},'dyr')">Akc. Dyrektora</button>`);
