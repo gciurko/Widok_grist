@@ -829,9 +829,8 @@ async function loadAll() {
     const chip=document.getElementById('hdrRole');
     const role=S.isPrez?'Prezes':S.isDyr?'Dyrektor':S.isKier?'Kierownik':'';
     if(role){chip.textContent=role;chip.classList.remove('hidden');}
-   const canNew =
-  (S.panel.EdycjaKiero && S.isKier) ||
-  (S.panel.EdycjaDyr && S.isDyr);
+    document.getElementById('btnNew').disabled =
+    !(S.panel.EdycjaKiero || S.panel.EdycjaDyr);
     document.getElementById('btnNew').disabled = !canNew;
     document.getElementById('btnNew').title=S.panel.EdycjaKiero?'':'Edycja kierowników jest wyłączona';
     document.getElementById('stateLoading').classList.add('hidden');
@@ -856,11 +855,8 @@ async function refresh() {
     S.isPrez = !!p.czyPrez;
   }
 }
-const canNew =
-  (S.panel.EdycjaKiero && S.isKier) ||
-  (S.panel.EdycjaDyr && S.isDyr);
-
-document.getElementById('btnNew').disabled = !canNew;
+document.getElementById('btnNew').disabled =
+  !(S.panel.EdycjaKiero || S.panel.EdycjaDyr);
 
   renderTable();
 }
