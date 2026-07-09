@@ -834,13 +834,12 @@ grist.ready({requiredAccess:'full'});
 
 async function loadAll() {
   try {
+
     try {
-    try {
-      
-const u = await grist.getUserInfo();
-S.userEmail = u?.email || null;
-S.userName = u?.name || u?.email || null;
-} catch (_) {}
+      const u = await grist.getUserInfo();
+      S.userEmail = u?.email || null;
+      S.userName = u?.name || u?.email || null;
+    } catch (_) {}
 
     const [prac, szk, term, main, panel] = await Promise.all([
       grist.docApi.fetchTable('Pracownicy'),
@@ -872,30 +871,18 @@ S.userName = u?.name || u?.email || null;
     document.getElementById('hdrUser').textContent =
       S.userName || S.userEmail || 'Użytkownik';
 
-    const chip = document.getElementById('hdrRole');
-    const role =
-      S.isPrez ? 'Prezes' :
-      S.isDyr ? 'Dyrektor' :
-      S.isKier ? 'Kierownik' : '';
-
-    if (role) {
-      chip.textContent = role;
-      chip.classList.remove('hidden');
-    }
-
-    document.getElementById('btnNew').disabled = false;
-
     document.getElementById('stateLoading').classList.add('hidden');
     document.getElementById('appRoot').classList.remove('hidden');
-    
+
     renderTable();
 
   } catch (e) {
+
     document.getElementById('stateLoading').textContent =
       '⚠ Błąd: ' + e.message;
+
   }
 }
-
 async function refresh() {
   const [main, panel] = await Promise.all([
     grist.docApi.fetchTable('Main'),
