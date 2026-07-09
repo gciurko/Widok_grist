@@ -883,6 +883,15 @@ console.log('PRACOWNIK', p);
     document.getElementById('stateLoading').classList.add('hidden');
     document.getElementById('appRoot').classList.remove('hidden');
 
+    alert(
+  JSON.stringify({
+    email: S.userEmail,
+    isKier: S.isKier,
+    isDyr: S.isDyr,
+    isPrez: S.isPrez
+  })
+);
+    
     renderTable();
 
   } catch (e) {
