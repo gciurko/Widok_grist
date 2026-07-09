@@ -514,10 +514,10 @@ function renderTable() {
 
   const canAdd  = !!S.panel.EdycjaKiero;
 
-  const canEdit =
-    (S.panel.EdycjaKiero && S.isKier) ||
-    (S.panel.EdycjaDyr && S.isDyr) ||
-    (S.panel.EdycjaPrezes2 && S.isPrez);
+const canEdit =
+  S.panel.EdycjaKiero ||
+  S.panel.EdycjaDyr ||
+  S.panel.EdycjaPrezes2;
 
   console.log({
   EdycjaKiero: S.panel.EdycjaKiero,
