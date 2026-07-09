@@ -843,14 +843,6 @@ async function loadAll() {
     S.main = colsToRows(main);
     S.panel = colsToRows(panel)[0] || {};
 
-console.log('EMAIL', S.userEmail);
-
-const p = S.pracownicy.find(
-  x => x.email_prac === S.userEmail
-);
-
-console.log('PRACOWNIK', p);
-
     if (S.userEmail) {
       const p = S.pracownicy.find(
         x => x.email_prac === S.userEmail
@@ -882,15 +874,6 @@ console.log('PRACOWNIK', p);
 
     document.getElementById('stateLoading').classList.add('hidden');
     document.getElementById('appRoot').classList.remove('hidden');
-
-    alert(
-  JSON.stringify({
-    email: S.userEmail,
-    isKier: S.isKier,
-    isDyr: S.isDyr,
-    isPrez: S.isPrez
-  })
-);
     
     renderTable();
 
