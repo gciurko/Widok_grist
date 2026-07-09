@@ -541,9 +541,7 @@ function renderTable() {
 const mode = S.expandMode.get(r.id)||null;
 
 
-const acts = [
-  '<button style="background:red;color:white;padding:5px">TEST</button>'
-];
+const acts = [];
 
 
 if (canEdit) {
@@ -844,6 +842,14 @@ async function loadAll() {
     S.terminy = colsToRows(term);
     S.main = colsToRows(main);
     S.panel = colsToRows(panel)[0] || {};
+
+console.log('EMAIL', S.userEmail);
+
+const p = S.pracownicy.find(
+  x => x.email_prac === S.userEmail
+);
+
+console.log('PRACOWNIK', p);
 
     if (S.userEmail) {
       const p = S.pracownicy.find(
