@@ -824,19 +824,12 @@ grist.ready({requiredAccess:'full'});
 async function loadAll() {
   try {
     try {
-      const u = await grist.getUserInfo();
-
-alert(JSON.stringify(u, null, 2));
-
+    try {
+      
+const u = await grist.getUserInfo();
 S.userEmail = u?.email || null;
 S.userName = u?.name || u?.email || null;
-    } 
-catch (e) {
-
-  alert('BŁĄD getUserInfo: ' + e.message);
-
-}
-
+} catch (_) {}
 
     const [prac, szk, term, main, panel] = await Promise.all([
       grist.docApi.fetchTable('Pracownicy'),
