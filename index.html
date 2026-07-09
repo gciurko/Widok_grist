@@ -830,7 +830,13 @@ alert(JSON.stringify(u, null, 2));
 
 S.userEmail = u?.email || null;
 S.userName = u?.name || u?.email || null;
-    } catch (_) {}
+    } 
+catch (e) {
+
+  alert('BŁĄD getUserInfo: ' + e.message);
+
+}
+
 
     const [prac, szk, term, main, panel] = await Promise.all([
       grist.docApi.fetchTable('Pracownicy'),
