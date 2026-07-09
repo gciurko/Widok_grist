@@ -825,8 +825,11 @@ async function loadAll() {
   try {
     try {
       const u = await grist.getUserInfo();
-      S.userEmail = u?.email || null;
-      S.userName = u?.name || u?.email || null;
+
+alert(JSON.stringify(u, null, 2));
+
+S.userEmail = u?.email || null;
+S.userName = u?.name || u?.email || null;
     } catch (_) {}
 
     const [prac, szk, term, main, panel] = await Promise.all([
