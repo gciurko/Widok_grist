@@ -450,8 +450,10 @@ function termLabel(id) {
 function statusInfo(r) {
   if (r.Prezes_Akceptacja===true)  return ['b-green','Zatwierdzone'];
   if (r.Prezes_Akceptacja===false) return ['b-red','Odrz. Prezes'];
+  if (r.Prezes_Akceptacja===none) return ['b-yellow','W toku'];
   if (r.Dyr_Akceptacja===true)     return ['b-blue','Akc. Dyr.'];
   if (r.Dyr_Akceptacja===false)    return ['b-red','Odrz. Dyr.'];
+  if (r.Dyr_Akceptacja===none) return ['b-yellow','W toku'];
   return ['b-gray','Oczekuje'];
 }
 function priorityBadge(p) {
