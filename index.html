@@ -316,6 +316,13 @@
       <input id="searchInput" class="search-input" type="text" placeholder="Szukaj…" autocomplete="off">
     </div>
 
+    <div class="filter-tabs">
+      <button class="ft on" data-f="all">Wszystkie <span class="cnt" id="cntAll">0</span></button>
+      <button class="ft" data-f="pending">Akceptacja Dyrektor<span class="cnt" id="cntPending">0</span></button>
+      <button class="ft" data-f="dyr">Akceptacja Prezes<span class="cnt" id="cntDyr">0</span></button>
+      <button class="ft" data-f="done">Zatwierdzone<span class="cnt" id="cntDone">0</span></button>
+    </div>
+    
     <div class="ml-auto" style="display:flex;gap:8px;align-items:center;">
       <button class="btn btn-ghost" id="btnRefresh">↻ Odśwież</button>
       <button class="btn btn-primary" id="btnNew">+ Nowy wniosek</button>
